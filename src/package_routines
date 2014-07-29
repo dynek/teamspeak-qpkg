@@ -1,0 +1,77 @@
+######################################################################
+# Custom definitions
+#
+# Other available definitions are defined in qinstall.sh and qpkg.cfg
+######################################################################
+CMD_UNIX2DOS="/sbin/unix2dos"
+CMD_KILLALL="/usr/bin/killall"
+######################################################################
+# All package specific functions shall call 'err_log MSG' if an error
+# is detected that shall terminate the installation/upgrade.
+######################################################################
+######################################################################
+# Define any package specific operations that shall be performed when
+# the package is installed.
+######################################################################
+pkg_pre_install(){
+
+	# Define where TeamSpeak info file should be stored
+	TEAMSPEAK_INFO_FILE="${SYS_PUBLIC_PATH}/TeamSpeak_info.txt"
+
+	# Check if package is being upgraded
+	IS_UPGRADE="$($CMD_GETCFG $QPKG_NAME $SYS_QPKG_CONF_FIELD_VERSION -f $SYS_QPKG_CONFIG_FILE)"
+
+	# If package is being installed (not upgraded)
+	if [ -z "$IS_UPGRADE" ]; then
+
+		# Remove info file
+		[ -f "$TEAMSPEAK_INFO_FILE" ] && $CMD_RM $TEAMSPEAK_INFO_FILE
+
+	fi
+
+}
+#
+pkg_install(){
+
+	# If package is being installed (not upgraded)
+	if [ -z "$IS_UPGRADE" ]; then
+
+		# Run service once to generate username, password and token
+		echo "Run service once to generate username, password and token..."
+
+		export LD_LIBRARY_PATH="${SYS_QPKG_DIR}:${LD_LIBRARY_PATH}"
+		cd ${SYS_QPKG_DIR}
+		./ts3server_linux_x86 2>&1 > /dev/null | tee $TEAMSPEAK_INFO_FILE &
+		# wait that info file contains needed information
+		counter=0
+		while :
+		do
+			# if teamspeak info file contains token= line, exit
+                        [[ -f $TEAMSPEAK_INFO_FILE && `${CMD_GREP} "token=" $TEAMSPEAK_INFO_FILE` ]] && break
+			# increment counter to exit when 60 seconds reached (to not stay in infinite loop)
+			counter=$((counter+1))
+			[ $counter -ge 60 ] && break
+			# wait for 1 second
+			$CMD_SLEEP 1
+		done
+		# finally kill the teamspeak daemon
+		$CMD_KILLALL ts3server_linux_x86
+		# Make info file look nicer on Windows
+		$CMD_UNIX2DOS $TEAMSPEAK_INFO_FILE
+		# Change permission on info file
+		$CMD_CHOWN admin.everyone $TEAMSPEAK_INFO_FILE
+		$CMD_CHMOD 755 $TEAMSPEAK_INFO_FILE
+
+	fi
+
+}
+#
+#pkg_post_install(){
+#}
+#
+######################################################################
+# Define any package specific requirement checks that shall be
+# performed before the package is installed/upgraded.
+######################################################################
+#pkg_check_requirement(){
+#}
