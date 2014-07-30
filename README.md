@@ -18,9 +18,7 @@ Following files/directories should be extracted from Linux Server x86 tgz and co
 
 This has to be done manually upon each release - Feel free to participate if you feel like writing a script to make things better :-)
 
-File qpkg\qpkg.conf contains information about QPKG. You will most likely want to change `QPKG_VER`.
-
-*As a matter of information, ending integer is increased upon each release.*
+File qpkg\qpkg.conf contains information about QPKG. You will most likely want to change `QPKG_VER` (*As a matter of information, ending integer is increased upon each release*).
 
 Make sure QDK is installed on your QNAP and simply run from qpkg directory:
 
