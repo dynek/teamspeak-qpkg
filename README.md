@@ -1,3 +1,8 @@
+Not maintained anymore
+======================
+This package will not be maintained anymore.
+QNAP_Stephane is now taking care of the QPKG @ http://forum.qnap.com/viewtopic.php?f=228&t=109668
+
 Description
 ===========
 TeamSpeak is flexible, powerful, scalable software which allows groups of people to speak with one another over the Internet.
